@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAZORA // Mission Control Dispatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #090a0f; color: #e2e8f0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body class="p-6">
+    <header class="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-black tracking-wider text-cyan-400">HAZORA // UNIFIED DISASTER INTELLIGENCE</h1>
+            <p class="text-xs text-slate-400">Sub-25K SAR Swarm & Autonomous Telemetry Kernel</p>
+        </div>
+        <div id="connection-status" class="px-3 py-1 rounded bg-amber-500/20 text-amber-400 text-xs border border-amber-500/30">
+            CONNECTING TO KERNEL...
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide">DEM Elevation & Hazard Polygon Rerouting</h2>
+                    <div class="space-x-2">
+                        <button onclick="setVehicleClass('Class A', 15)" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30">Class A (Sedan &lt;15cm)</button>
+                        <button onclick="setVehicleClass('Class B', 30)" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Class B (SUV &lt;30cm)</button>
+                        <button onclick="setVehicleClass('Class C', 65)" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Class C (SAR &lt;65cm)</button>
+                    </div>
+                </div>
+                
+                <div id="map-container" class="relative h-80 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <div id="polygon-overlay" class="absolute w-48 h-48 rounded-full bg-blue-500/10 border-2 border-blue-500/40 flex items-center justify-center transition-all duration-500">
+                        <span id="polygon-label" class="text-xs text-blue-400 font-bold bg-slate-900/80 px-2 py-1 rounded">SAFE CORRIDOR (CLEAR)</span>
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-400 mt-3">
+                    <span>Active Profile: <strong id="active-profile" class="text-cyan-400">Class A (Sedan - Max Wading 15cm)</strong></span>
+                    <span>500m / 3-Min Reroute Advantage: <strong class="text-emerald-400">ARMED</strong></span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3">Kernel Audit & Voice Dispatch Log</h2>
+                <div id="log-box" class="h-40 bg-slate-950 rounded-lg p-3 overflow-y-auto text-xs space-y-2 font-mono text-slate-400 border border-slate-800">
+                    <div>[00:00:00] [SYSTEM] HAZORA FastAPI Kernel initialized on 0.0.0.0:8000.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div id="stake-card" class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 transition-all">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide">Pillar 3: Smart Stake (Node #01)</h2>
+                    <span id="stake-badge" class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 font-bold">NORMAL</span>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <div class="flex justify-between mb-1"><span>Soil Moisture:</span><span id="val-moisture" class="font-bold">42.5%</span></div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div id="bar-moisture" class="bg-cyan-500 h-1.5 rounded" style="width: 42.5%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1"><span>MPU6050 Tilt Delta:</span><span id="val-tilt" class="font-bold">1.2°</span></div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded"><div id="bar-tilt" class="bg-cyan-500 h-1.5 rounded" style="width: 12%"></div></div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 italic pt-1">AND-Gate Logic: Triggers if Moisture &gt; 80% AND Tilt &gt; 5.0°.</p>
+                </div>
+            </div>
+
+            <div id="rubble-card" class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 transition-all">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide">Pillar 2: Rubble Diver Sensor Fusion</h2>
+                    <span id="rubble-badge" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-bold">IN FLIGHT</span>
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between"><span>Motors State:</span><span id="val-motors" class="text-amber-400 font-bold">ARMED (Prop-Wash Active)</span></div>
+                    <div class="flex justify-between"><span>Wi-Fi RSSI (Probe Sniffer):</span><span id="val-rssi" class="font-bold">-85 dBm</span></div>
+                    <div class="flex justify-between"><span>Piezo Contact Mic:</span><span id="val-mic" class="font-bold">12 dB</span></div>
+                    <div class="flex justify-between"><span>MQ-135 CO2 Plume:</span><span id="val-co2" class="font-bold">420 ppm</span></div>
+                    <p class="text-[11px] text-slate-400 italic pt-2">Perch & Listen: Motors cut on slab. Requires 2 of 3 sensor triggers.</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5">
+                <h2 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3">Grid-Down Mesh & CAD SOS</h2>
+                <div class="space-y-2 text-xs text-slate-300">
+                    <div class="flex justify-between"><span>BLE P2P Relay:</span><span class="text-emerald-400 font-bold">ACTIVE (14 Nodes)</span></div>
+                    <div class="flex justify-between"><span>CAD Micro-Bursts:</span><span id="val-sos-bursts" class="text-slate-400 font-bold">0 Queued</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        function connectWebSocket() {
+            ws = new WebSocket("ws://127.0.0.1:8000/ws/mission_control");
+            ws.onopen = () => {
+                document.getElementById('connection-status').className = "px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs border border-emerald-500/30";
+                document.getElementById('connection-status').innerText = "KERNEL LINKED (LIVE)";
+                logMessage("WebSocket connection established with FastAPI kernel.");
+            };
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                handleTelemetry(msg);
+            };
+            ws.onclose = () => {
+                document.getElementById('connection-status').className = "px-3 py-1 rounded bg-rose-500/20 text-rose-400 text-xs border border-rose-500/30";
+                document.getElementById('connection-status').innerText = "DISCONNECTED - RETRYING...";
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function logMessage(text) {
+            const box = document.getElementById('log-box');
+            const time = new Date().toTimeString().split(' ')[0];
+            box.innerHTML += `<div>[${time}] ${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function speakAlert(text) {
+            if ('speechSynthesis' in window && text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function setVehicleClass(cls, depth) {
+            document.getElementById('active-profile').innerText = `${cls} (Max Wading ${depth}cm)`;
+            logMessage(`Vehicle clearance profile updated to ${cls} (${depth}cm threshold).`);
+        }
+
+        function handleTelemetry(packet) {
+            if (packet.alert_voice) speakAlert(packet.alert_voice);
+
+            if (packet.type === 'stake_update') {
+                const p = packet.data.payload;
+                const status = packet.status;
+                document.getElementById('val-moisture').innerText = p.moisture_percent + '%';
+                document.getElementById('bar-moisture').style.width = Math.min(p.moisture_percent, 100) + '%';
+                document.getElementById('val-tilt').innerText = p.tilt_delta_degrees + '°';
+                document.getElementById('bar-tilt').style.width = Math.min(p.tilt_delta_degrees * 10, 100) + '%';
+                
+                const stakeCard = document.getElementById('stake-card');
+                const stakeBadge = document.getElementById('stake-badge');
+                if (status === 'LANDSLIDE_WARNING_ACTIVE') {
+                    stakeCard.className = "bg-rose-950/40 border border-rose-600 rounded-xl p-5 glow-red transition-all";
+                    stakeBadge.className = "px-2 py-0.5 rounded text-[10px] bg-rose-500 text-white font-bold animate-pulse";
+                    stakeBadge.innerText = "LANDSLIDE WARNING";
+                    logMessage(`[ALERT] Smart Stake triggered AND-gate landslide warning! Moisture: ${p.moisture_percent}%, Tilt: ${p.tilt_delta_degrees}°.`);
+                } else {
+                    stakeCard.className = "bg-slate-900/80 border border-slate-800 rounded-xl p-5 transition-all";
+                    stakeBadge.className = "px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 font-bold";
+                    stakeBadge.innerText = status;
+                    logMessage(`[STAKE] Telemetry ingested (${status}). Moisture: ${p.moisture_percent}%, Tilt: ${p.tilt_delta_degrees}°.`);
+                }
+            } else if (packet.type === 'rubble_update') {
+                const p = packet.data.payload;
+                const status = packet.status;
+                document.getElementById('val-motors').innerText = p.is_motor_disarmed ? "DISARMED (Perched)" : "ARMED (Active)";
+                document.getElementById('val-motors').className = p.is_motor_disarmed ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+                document.getElementById('val-rssi').innerText = p.wifi_rssi_dbm + ' dBm';
+                document.getElementById('val-mic').innerText = p.contact_mic_db + ' dB';
+                document.getElementById('val-co2').innerText = p.co2_ppm + ' ppm';
+
+                const rubbleCard = document.getElementById('rubble-card');
+                const rubbleBadge = document.getElementById('rubble-badge');
+                if (status === 'SURVIVOR_LOCK_ACQUIRED') {
+                    rubbleCard.className = "bg-blue-950/40 border border-blue-600 rounded-xl p-5 glow-blue transition-all";
+                    rubbleBadge.className = "px-2 py-0.5 rounded text-[10px] bg-blue-500 text-white font-bold animate-pulse";
+                    rubbleBadge.innerText = "SURVIVOR LOCKED";
+                    logMessage(`[SAR] Rubble Diver acquired survivor lock! RSSI: ${p.wifi_rssi_dbm}dBm, Mic: ${p.contact_mic_db}dB, CO2: ${p.co2_ppm}ppm.`);
+                }
+            } else if (packet.type === 'sos_mesh_burst') {
+                document.getElementById('val-sos-bursts').innerText = `1 Queued (${packet.data.byte_size}B)`;
+                document.getElementById('val-sos-bursts').className = "text-amber-400 font-bold animate-pulse";
+                logMessage(`[MESH SOS] Packed ${packet.data.byte_size}-byte binary burst from ${packet.data.payload.trapped_node_id}.`);
+            }
+        }
+
+        connectWebSocket();
+    </script>
+</body>
+</html>

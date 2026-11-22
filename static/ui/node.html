@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HAZORA - Safe Route</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #291C0E;
+      --surface: rgba(225, 212, 194, .07);
+      --surface-soft: rgba(167, 141, 120, .18);
+      --ink: #E1D4C2;
+      --muted: #BEB5A9;
+      --line: rgba(190, 181, 169, .22);
+      --button: #E1D4C2;
+      --button-border: #A78D78;
+      --button-glow: rgba(167, 141, 120, .28);
+      --green: #BEB5A9;
+      --green-soft: rgba(190, 181, 169, .12);
+      --button: rgba(64, 49, 38, .82);
+      --button-border: rgba(225, 212, 194, .34);
+      --button-glass: linear-gradient(145deg, rgba(225, 212, 194, .18), rgba(225, 212, 194, .07) 20%, rgba(64, 49, 38, .03) 50%, rgba(163, 166, 122, .12) 74%, rgba(177, 122, 104, .14));
+      --green: #A3A67A;
+      --green-soft: rgba(163, 166, 122, .16);
+      --clay-glow: rgba(177, 122, 104, .18);
+      --clay-glass: rgba(177, 122, 104, .10);
+      --honey-glow: rgba(195, 163, 106, .07);
+      --red: #E56B6F;
+      --red-soft: rgba(110, 71, 59, .34);
+      --amber: #A78D78;
+      --amber: #A3A67A;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #291C0E;
+      background:
+        radial-gradient(ellipse 68% 42% at 12% 10%, rgba(163, 166, 122, .14), transparent 74%),
+        radial-gradient(ellipse 54% 34% at 88% 18%, var(--clay-glow), transparent 76%),
+        radial-gradient(ellipse 42% 28% at 18% 74%, rgba(177, 122, 104, .13), transparent 78%),
+        radial-gradient(ellipse 56% 38% at 88% 66%, rgba(163, 166, 122, .10), transparent 76%),
+        #291C0E;
+      color: var(--ink);
+      font-family: "Playfair Display", Georgia, serif;
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0 auto;
+      padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+      gap: 10px;
+      overflow: hidden;
+    }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -12%;
+      z-index: -1;
+      pointer-events: none;
+    }
+    body::before {
+      background:
+        radial-gradient(ellipse 42% 34% at 15% 20%, rgba(225, 212, 194, .18), transparent 76%),
+        radial-gradient(ellipse 38% 32% at 82% 28%, rgba(225, 212, 194, .10), transparent 74%),
+        radial-gradient(ellipse 46% 30% at 62% 82%, rgba(110, 71, 59, .24), transparent 78%),
+        radial-gradient(ellipse 30% 24% at 24% 76%, rgba(225, 212, 194, .055), transparent 76%),
+        radial-gradient(ellipse 26% 22% at 72% 55%, rgba(163, 166, 122, .09), transparent 78%),
+        radial-gradient(ellipse 28% 20% at 35% 88%, var(--clay-glow), transparent 78%),
+        radial-gradient(ellipse 24% 18% at 78% 72%, rgba(177, 122, 104, .14), transparent 78%),
+        radial-gradient(ellipse 24% 20% at 92% 18%, var(--honey-glow), transparent 78%);
+      filter: blur(34px) saturate(125%);
+      opacity: .82;
+      animation: liquid-glass-drift 24s ease-in-out infinite alternate;
+    }
+    body::after {
+      background:
+        linear-gradient(122deg, transparent 28%, rgba(225, 212, 194, .045) 39%, rgba(225, 212, 194, .10) 41%, transparent 47%),
+        linear-gradient(118deg, transparent 58%, rgba(110, 71, 59, .12) 63%, transparent 70%),
+        linear-gradient(112deg, transparent 18%, rgba(163, 166, 122, .07) 24%, transparent 31%),
+        linear-gradient(126deg, transparent 38%, rgba(177, 122, 104, .12) 46%, transparent 53%),
+        radial-gradient(ellipse at 68% 42%, rgba(163, 166, 122, .035), transparent 54%);
+      filter: blur(2px);
+      opacity: .72;
+      transform: rotate(-7deg) scale(1.12);
+      -webkit-mask-image: radial-gradient(ellipse at 48% 46%, #000 20%, transparent 78%);
+      mask-image: radial-gradient(ellipse at 48% 46%, #000 20%, transparent 78%);
+      animation: liquid-glass-reflection 60s ease-in-out infinite alternate;
+    }
+    @keyframes liquid-glass-drift {
+      from { transform: translate3d(-1.2%, -.6%, 0) scale(1); }
+      to { transform: translate3d(1.2%, .8%, 0) scale(1.04); }
+    }
+    @keyframes liquid-glass-reflection {
+      from { translate: -1% -1%; }
+      to { translate: 1% 1%; }
+    }
+    .liquid-glass {
+      background: linear-gradient(135deg, rgba(163, 166, 122, .13), transparent 42%), linear-gradient(315deg, rgba(177, 122, 104, .12), transparent 58%), var(--surface);
+      color: var(--ink);
+      border: 1px solid rgba(225, 212, 194, .2);
+      box-shadow: 0 5px 18px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(225, 212, 194, .1), inset 0 0 22px rgba(163, 166, 122, .055);
+      backdrop-filter: blur(12px) saturate(112%);
+      -webkit-backdrop-filter: blur(12px) saturate(112%);
+    }
+    .app-header {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+      flex: none;
+    }
+    .app-name { font-family: "Intro Black Inline", "Intro Inline", sans-serif; font-size: 15px; font-weight: 400; letter-spacing: .07em; }
+    .app-state { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+    .app-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    #launch-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: max(24px, env(safe-area-inset-top)) 22px max(18px, env(safe-area-inset-bottom));
+      background: rgba(41, 28, 14, .78);
+      color: var(--ink);
+      backdrop-filter: blur(22px) saturate(130%);
+      -webkit-backdrop-filter: blur(22px) saturate(130%);
+      overflow-y: auto;
+    }
+    #launch-overlay.hidden { display: none !important; }
+    #launch-overlay h1 {
+      font-family: "Dx Monstral", "Arial Black", sans-serif;
+      max-width: 360px;
+      margin-top: 18px;
+      color: var(--ink) !important;
+      font-size: clamp(2rem, 8vw, 2.45rem);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -.045em;
+    }
+    #launch-overlay p { color: var(--muted) !important; font-size: 14px; line-height: 1.55; }
+    #launch-overlay .inline-flex.rounded-full {
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      border: 1px solid rgba(225, 212, 194, .3);
+      box-shadow: none;
+      color: var(--green) !important;
+      font-size: 25px;
+      font-weight: 700;
+      letter-spacing: .025em;
+    }
+    #launch-overlay .inline-flex.rounded-full > span { background: var(--green) !important; }
+    #launch-overlay .text-xs.font-semibold.uppercase { color: var(--muted) !important; letter-spacing: .045em; }
+    #launch-overlay .grid.grid-cols-2 { gap: 14px; }
+    #launch-overlay #vehicle-sedan-btn,
+    #launch-overlay #vehicle-suv-btn {
+      min-height: 100px;
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--button) !important;
+      border: 3px solid var(--button-border) !important;
+      color: #291C0E !important;
+      color: var(--ink) !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(225, 212, 194, .14);
+      transform: translateY(0);
+      transition: transform .16s cubic-bezier(.2, .8, .2, 1), box-shadow .16s ease;
+    }
+    #launch-overlay #vehicle-sedan-btn > div:first-child,
+    #launch-overlay #vehicle-suv-btn > div:first-child { color: #291C0E !important; font-size: 17px; line-height: 1.2; }
+    #launch-overlay #vehicle-suv-btn > div:first-child { color: var(--green) !important; font-size: 18px; font-weight: 800; line-height: 1.18; letter-spacing: .01em; }
+    #launch-overlay #vehicle-sedan-btn > div:last-child,
+    #launch-overlay #vehicle-suv-btn > div:last-child { color: rgba(41, 28, 14, .72) !important; font-size: 14px; line-height: 1.4; }
+    #launch-overlay #vehicle-suv-btn > div:last-child { color: var(--ink) !important; font-size: 15px; font-weight: 600; line-height: 1.35; }
+    #launch-overlay #vehicle-sedan-btn > div,
+    #launch-overlay #vehicle-suv-btn > div {
+      display: inline-block;
+      transform-origin: center;
+      transition: transform .16s cubic-bezier(.2, .8, .2, 1), text-shadow .16s ease;
+    }
+    #launch-overlay #vehicle-sedan-btn:active > div:first-child,
+    #launch-overlay #vehicle-suv-btn:active > div:first-child {
+      transform: translateY(-3px) scale(1.1);
+      text-shadow: 0 3px 8px rgba(41, 28, 14, .28);
+    }
+    #launch-overlay #vehicle-sedan-btn:active > div:last-child,
+    #launch-overlay #vehicle-suv-btn:active > div:last-child {
+      transform: translateY(-1px) scale(1.04);
+      text-shadow: 0 2px 6px rgba(41, 28, 14, .2);
+    }
+    [data-selected="true"] {
+      background: var(--button) !important;
+      border: 2px solid var(--button-border) !important;
+      color: #291C0E !important;
+      box-shadow: 0 0 0 3px rgba(110, 71, 59, .26) !important;
+      color: var(--ink) !important;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(225, 212, 194, .14) !important;
+    }
+    [data-selected="true"] > div:first-child { color: #291C0E !important; }
+    [data-selected="true"] > div:last-child { color: rgba(41, 28, 14, .72) !important; }
+    [data-selected="true"] > div:first-child { color: var(--green) !important; }
+    [data-selected="true"] > div:last-child { color: var(--ink) !important; }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:first-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:first-child { color: #291C0E !important; }
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:first-child { color: var(--green) !important; }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:last-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:last-child { color: rgba(41, 28, 14, .72) !important; }
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:last-child { color: var(--ink) !important; }
+    [data-selected="false"] { background: var(--surface) !important; border: 1px solid var(--line) !important; }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"],
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] {
+      background: var(--button) !important;
+      background-image: var(--button-glass) !important;
+      border-color: var(--button-border) !important;
+      color: var(--ink) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:first-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:first-child { color: var(--green) !important; }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:last-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:last-child { color: var(--ink) !important; }
+    #btn-start-evac {
+      min-height: 66px;
+      padding: 16px 20px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--button) !important;
+      color: #291C0E !important;
+      color: var(--ink) !important;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, .2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0;
+      transition: transform .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    #btn-start-evac:active {
+      background: #6E473B !important;
+      color: #E1D4C2 !important;
+      background: #FFEEB3 !important;
+      color: #291C0E !important;
+      transform: translateY(-3px) scale(1.025);
+      box-shadow: 0 9px 20px rgba(110, 71, 59, .42);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, .25), 0 1px 2px rgba(225, 212, 194, .08);
+    }
+    #btn-start-evac .button-label {
+      display: inline-block;
+      transform-origin: center;
+      transition: transform .16s cubic-bezier(.2, .8, .2, 1), text-shadow .16s ease;
+    }
+    #btn-start-evac:active .button-label {
+      transform: translateY(-2px) scale(1.08);
+      text-shadow: 0 3px 8px rgba(41, 28, 14, .3);
+    }
+    #launch-overlay > div:last-child { padding-bottom: 0; }
+    #launch-overlay > div:last-child p { margin-top: 10px; font-size: 11px; }
+    #launch-overlay .text-slate-300,
+    #launch-overlay .text-slate-400 { color: var(--muted) !important; }
+    #launch-overlay > div:first-child { padding-top: 12px; }
+    #launch-overlay > div:nth-child(2) { margin: 22px 0; }
+    #guidance-card {
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      gap: 12px;
+      border-radius: 20px;
+      flex: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+        #guidance-card[data-danger="true"] {
+      border-color: #E56B6F !important;
+      box-shadow: 0 0 0 2px rgba(229, 107, 111, .35), 0 4px 16px rgba(0, 0, 0, .25);
+    }
+    #safe-confirmation-pill[data-danger="true"] {
+      background: rgba(229, 107, 111, .22) !important;
+      border-color: #E56B6F !important;
+      color: #FDE2E2 !important;
+    }
+    #guidance-card[data-aligned="true"] {
+      border-color: #6E473B;
+      box-shadow: 0 0 0 2px rgba(110, 71, 59, .24), 0 4px 14px rgba(0, 0, 0, .12);
+      border-color: #A3A67A;
+      box-shadow: 0 0 0 2px rgba(163, 166, 122, .24), 0 4px 14px rgba(0, 0, 0, .12);
+    }
+    #guidance-card > div:first-child { color: var(--muted) !important; font-size: 11px; }
+    #status-pill { color: var(--green) !important; }
+    #status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    #compass-status { color: var(--muted) !important; letter-spacing: .025em; }
+    #steer-chevron {
+      width: 58px;
+      height: 58px;
+      border: 1px solid var(--line) !important;
+      border-radius: 50%;
+      background: var(--green-soft) !important;
+      color: var(--green) !important;
+      font-size: 34px;
+      font-weight: 650;
+    }
+    #steer-chevron[data-tone="turn"] { color: var(--amber) !important; background: rgba(110, 71, 59, .3) !important; }
+    #steer-chevron[data-tone="reverse"] { color: var(--red) !important; background: var(--red-soft) !important; }
+    #steer-instruction { color: var(--ink) !important; font-size: 21px; font-weight: 680; letter-spacing: -.025em; }
+    #guidance-card .text-slate-300 { color: var(--muted) !important; }
+    #metric-distance { color: var(--green) !important; }
+    #safe-confirmation-pill {
+      padding: 9px 11px;
+      border: 1px solid rgba(225, 212, 194, .28) !important;
+      border-radius: 12px;
+      background: var(--green-soft) !important;
+      color: var(--green) !important;
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+    #safe-confirmation-pill[data-aligned="true"] {
+      background: rgba(110, 71, 59, .42) !important;
+      border-color: #6E473B !important;
+      color: var(--ink) !important;
+      background: rgba(163, 166, 122, .2) !important;
+      border-color: #A3A67A !important;
+      color: var(--green) !important;
+    }
+    .radar-panel {
+      position: relative;
+      display: flex;
+      flex: 1 1 0%;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(225, 212, 194, .05);
+      background: linear-gradient(135deg, rgba(163, 166, 122, .12), transparent 48%), linear-gradient(315deg, rgba(177, 122, 104, .10), transparent 60%), rgba(225, 212, 194, .04);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .14);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    #radar-canvas { display: block; width: 100%; height: 100%; background: #291C0E; touch-action: none; }
+    .radar-legend {
+      background: rgba(41, 28, 14, .9) !important;
+      border: 1px solid var(--line) !important;
+      color: var(--muted) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
+    }
+    .radar-legend .text-emerald-300 { color: var(--green) !important; }
+    .radar-legend .text-rose-300 { color: var(--red) !important; }
+    .radar-legend .bg-emerald-400 { background: var(--green) !important; }
+    .radar-legend .bg-rose-500 { background: var(--red) !important; }
+    #toast-banner {
+      border: 1px solid rgba(110, 71, 59, .72) !important;
+      border: 1px solid rgba(163, 166, 122, .5) !important;
+      background: rgba(41, 28, 14, .96) !important;
+      color: var(--green) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .18);
+    }
+    .actions { display: flex; flex-direction: column; gap: 12px; padding-bottom: 0; flex: none; }
+    #btn-blocked-ahead {
+      min-height: 58px;
+      height: auto;
+      flex-direction: row;
+      gap: 9px;
+      padding: 12px 16px;
+      border: 1px solid var(--button-border) !important;
+      border-radius: 16px;
+      background: var(--button) !important;
+      color: #291C0E !important;
+      color: var(--ink) !important;
+    }
+    #btn-blocked-ahead span:first-child { color: #291C0E !important; font-size: 14px; font-weight: 680; letter-spacing: 0; }
+    #btn-blocked-ahead span:last-child { color: rgba(41, 28, 14, .72) !important; font-size: 12px; }
+    #btn-blocked-ahead span:first-child { color: var(--ink) !important; font-size: 14px; font-weight: 680; letter-spacing: 0; }
+    #btn-blocked-ahead span:last-child { color: var(--muted) !important; font-size: 12px; }
+    #btn-sos-hold {
+      min-height: 78px;
+      height: auto;
+      padding: 15px 18px;
+      border: 1px solid var(--button-border) !important;
+      border-radius: 16px;
+      background: #6E473B !important;
+      background: var(--button) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+    }
+    #btn-sos-hold:active { background: #6E473B !important; filter: brightness(1.14); }
+    #btn-sos-hold:active { background: #33251A !important; filter: none; }
+    #btn-sos-hold #sos-progress-ring { background: rgba(225, 212, 194, .2) !important; }
+    #sos-hold-label { color: #E1D4C2 !important; font-size: 16px; font-weight: 720; letter-spacing: 0; }
+    #btn-sos-hold .text-rose-100\/80 { color: rgba(225, 212, 194, .82) !important; }
+    #launch-overlay #vehicle-sedan-btn,
+    #launch-overlay #vehicle-suv-btn,
+    #btn-start-evac,
+    #btn-blocked-ahead,
+    #btn-sos-hold {
+      background-image: var(--button-glass) !important;
+      backdrop-filter: blur(18px) saturate(145%);
+      -webkit-backdrop-filter: blur(18px) saturate(145%);
+    }
+    #launch-overlay #vehicle-sedan-btn,
+    #launch-overlay #vehicle-suv-btn {
+      box-shadow: 0 5px 16px var(--button-glow), 0 3px 10px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(225, 212, 194, .3);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(225, 212, 194, .14);
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"],
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] {
+      box-shadow: 0 0 0 3px rgba(110, 71, 59, .26), 0 5px 16px var(--button-glow), inset 0 1px 0 rgba(225, 212, 194, .3) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-user-clicked="true"],
+    #launch-overlay #vehicle-suv-btn[data-user-clicked="true"] {
+      box-shadow: 0 0 20px 4px rgba(210, 207, 154, .48), 0 4px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(225, 212, 194, .14) !important;
+    }
+    #btn-start-evac,
+    #btn-blocked-ahead,
+    #btn-sos-hold {
+      box-shadow: 0 6px 18px var(--button-glow), 0 3px 10px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(225, 212, 194, .26);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .24), inset 0 1px 0 rgba(225, 212, 194, .14);
+    }
+    #btn-start-evac:active {
+      background-image: linear-gradient(135deg, rgba(167, 141, 120, .3), rgba(110, 71, 59, .08) 55%, rgba(225, 212, 194, .08)) !important;
+      box-shadow: 0 0 18px var(--button-glow), 0 9px 20px rgba(110, 71, 59, .42);
+      background: #FFEEB3 !important;
+      background-image: none !important;
+      color: #291C0E !important;
+      transform: translateY(3px) scale(.98);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, .28), 0 1px 2px rgba(225, 212, 194, .08);
+    }
+    #launch-overlay #vehicle-sedan-btn:active,
+    #launch-overlay #vehicle-suv-btn:active {
+      transform: translateY(4px) scale(.98);
+      box-shadow: inset 0 3px 9px rgba(0, 0, 0, .28), 0 1px 2px rgba(225, 212, 194, .08) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn:active,
+    #launch-overlay #vehicle-suv-btn:active {
+      box-shadow: 0 0 17px 3px rgba(210, 207, 154, .44), inset 0 3px 9px rgba(0, 0, 0, .28) !important;
+    }
+    #btn-sos-hold:active {
+      background-image: linear-gradient(135deg, rgba(167, 141, 120, .3), rgba(110, 71, 59, .08) 55%, rgba(225, 212, 194, .08)) !important;
+      box-shadow: 0 0 18px var(--button-glow), 0 4px 12px rgba(0, 0, 0, .2);
+      background: #33251A !important;
+      background-image: var(--button-glass) !important;
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, .28), 0 1px 2px rgba(225, 212, 194, .08);
+    }
+    #launch-overlay #vehicle-sedan-btn,
+    #launch-overlay #vehicle-suv-btn {
+      min-height: 100px;
+      border-width: 3px !important;
+      border-style: solid !important;
+      opacity: .58;
+      transition: opacity .18s ease, transform .16s ease, box-shadow .16s ease,
+                  background .16s ease, border-color .16s ease;
+    }
+    #launch-overlay #vehicle-sedan-btn > div:first-child,
+    #launch-overlay #vehicle-suv-btn > div:first-child {
+      color: var(--muted) !important;
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      line-height: 1.2 !important;
+    }
+    #launch-overlay #vehicle-sedan-btn > div:last-child,
+    #launch-overlay #vehicle-suv-btn > div:last-child {
+      color: var(--muted) !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"],
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] {
+      opacity: 1;
+      background: var(--button) !important;
+      background-image: var(--button-glass) !important;
+      border-color: var(--button-border) !important;
+      box-shadow: 0 0 0 3px rgba(163, 166, 122, .24),
+                  0 5px 16px var(--button-glow),
+                  inset 0 1px 0 rgba(225, 212, 194, .3) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:first-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:first-child {
+      color: var(--green) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="true"] > div:last-child,
+    #launch-overlay #vehicle-suv-btn[data-selected="true"] > div:last-child {
+      color: var(--ink) !important;
+    }
+    #launch-overlay #vehicle-sedan-btn[data-selected="false"],
+    #launch-overlay #vehicle-suv-btn[data-selected="false"] {
+      opacity: .58;
+      background: var(--surface) !important;
+      background-image: none !important;
+      border-color: var(--line) !important;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .18) !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #launch-overlay #vehicle-sedan-btn,
+      #launch-overlay #vehicle-suv-btn { transition: none; }
+    }
+    button { font-family: inherit; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #E1D4C2; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(110, 71, 59, .58); }
+    #btn-sos-hold { touch-action: none; }
+    @media (max-height: 700px) {
+      body { gap: 7px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+      #guidance-card { padding: 12px; gap: 9px; }
+      #steer-chevron { width: 50px; height: 50px; }
+      #steer-instruction { font-size: 19px; }
+      .actions { gap: 8px; }
+      #btn-sos-hold { min-height: 68px; }
+      #btn-blocked-ahead { min-height: 52px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      body::before, body::after { animation: none !important; }
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col max-w-md mx-auto px-3 py-3 gap-2.5 overflow-hidden">
+
+  <header class="app-header" aria-label="HAZORA user navigation">
+    <span class="app-name">HAZORA</span>
+    <span class="app-state">Offline route</span>
+  </header>
+
+  <!-- Vehicle choice and navigation start -->
+  <div id="launch-overlay" class="fixed inset-0 z-50 flex flex-col justify-between p-6 bg-slate-950/92 backdrop-blur-xl">
+    <div class="pt-6 space-y-2">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full liquid-glass text-xs font-semibold text-emerald-300 tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        HAZORA EVACUATION GUIDE
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-white leading-tight">
+        Find a safer way to higher ground
+      </h1>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        Follow a route that avoids reported flood areas. Keep your phone with you as you move.
+      </p>
+    </div>
+
+    <div class="space-y-3">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">What are you travelling in?</div>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="vehicle-sedan-btn" data-selected="true" data-user-clicked="false" class="liquid-glass rounded-2xl p-4 text-left transition">
+          <div class="text-sm font-bold text-white">On foot / Sedan</div>
+          <div class="text-xs text-slate-300 mt-0.5">Avoid water over 15 cm</div>
+        </button>
+        <button id="vehicle-suv-btn" data-selected="false" data-user-clicked="false" class="liquid-glass rounded-2xl p-4 text-left transition">
+          <div class="text-sm font-bold text-white">SUV / Rescue vehicle</div>
+          <div class="text-xs text-slate-300 mt-0.5">Water limit: 30 cm</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="pb-4">
+      <button id="btn-start-evac" class="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-sky-400 text-slate-950 font-black text-lg tracking-wide shadow-xl transition">
+        <span class="button-label">Start navigation</span>
+      </button>
+      <p class="text-[11px] text-center text-slate-400 mt-3">
+        Works offline • Turn on Location for the best directions
+      </p>
+    </div>
+  </div>
+
+  <!-- Live direction and route status -->
+  <section id="guidance-card" data-aligned="false" data-danger="false" class="liquid-glass rounded-3xl p-3.5 flex flex-col gap-2 shrink-0 transition-all duration-300">
+    <div class="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+      <span id="status-pill" class="inline-flex items-center gap-1.5 text-emerald-300">Offline route ready</span>
+      <span id="compass-status" class="text-sky-300 uppercase tracking-wider">Compass on</span>
+    </div>
+
+    <div class="flex items-center gap-3.5">
+      <div id="steer-chevron" data-tone="aligned" class="w-14 h-14 rounded-2xl bg-slate-950/60 border border-white/10 flex items-center justify-center text-4xl font-black shrink-0">
+        ↑
+      </div>
+      <div class="min-w-0">
+        <div id="steer-instruction" class="text-lg font-extrabold text-white leading-tight tracking-tight">
+          Continue straight
+        </div>
+        <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1 text-xs font-medium text-slate-300">
+          <span id="metric-distance" class="text-emerald-300 font-bold">1.2 km to safety</span>
+          <span>•</span>
+          <span id="metric-elevation">46 m uphill</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="safe-confirmation-pill" data-aligned="false" data-danger="false" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-400/30 text-[11px] font-bold text-emerald-200 tracking-wide truncate transition-colors">
+      Route avoids flooded areas • Safe area ahead
+    </div>
+  </section>
+
+  <!-- Map -->
+  <section class="radar-panel relative flex-1 min-h-0 overflow-hidden">
+    <canvas id="radar-canvas" class="w-full h-full block" aria-label="Map showing your location, safe route, and reported hazards"></canvas>
+
+    <div class="radar-legend pointer-events-none absolute top-2.5 left-2.5 flex items-center gap-2.5 px-2.5 py-1 rounded-full text-[10px] font-semibold">
+      <span class="flex items-center gap-1 text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Safe route</span>
+      <span class="flex items-center gap-1 text-rose-300"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Reported hazard</span>
+    </div>
+
+    <div id="toast-banner" class="opacity-0 pointer-events-none transition-opacity duration-300 absolute bottom-3 left-3 right-3 px-4 py-2.5 rounded-2xl bg-slate-950/92 border border-emerald-400/45 text-xs font-semibold text-emerald-100 text-center shadow-lg">
+      Route updated
+    </div>
+  </section>
+
+  <!-- Two clear actions -->
+  <section class="actions flex flex-col gap-2 shrink-0 pb-1">
+    <button id="btn-blocked-ahead" aria-label="Report that the route ahead is blocked" class="rounded-2xl liquid-glass active:scale-[0.98] transition flex items-center justify-center px-2">
+      <span class="text-sm font-extrabold text-amber-300 tracking-wide">Route blocked?</span>
+      <span class="text-[10px] text-slate-300 mt-0.5">Find another way</span>
+    </button>
+
+    <button id="btn-sos-hold" aria-label="Press and hold for three seconds to send an SOS over the HAZORA mesh" class="relative rounded-2xl overflow-hidden bg-rose-950/75 border border-rose-400/50 active:scale-[0.98] transition flex items-center justify-center px-3">
+      <div id="sos-progress-ring" class="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-600 to-red-500/90 transition-none" style="width: 0%;"></div>
+      <div class="relative z-10 flex flex-col items-center">
+        <span id="sos-hold-label" class="text-sm font-black text-white tracking-wide">Hold 3 seconds to send SOS</span>
+        <span class="text-[10px] text-rose-100/80">Share your distress signal with nearby HAZORA phones</span>
+      </div>
+    </button>
+  </section>
+
+  <!-- LOCKED LOGIC ENGINE -->
+  <script src="/static/js/node_engine.js?v=7"></script>
+  <script>
+    (() => {
+      const vehicleOptions = document.querySelectorAll("#vehicle-sedan-btn, #vehicle-suv-btn");
+      vehicleOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+          vehicleOptions.forEach((item) => {
+            item.dataset.userClicked = "false";
+            item.dataset.selected = "false";
+          });
+          option.dataset.userClicked = "true";
+          option.dataset.selected = "true";
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
